@@ -2,6 +2,7 @@ import os
 
 from scrapinghub import HubstorageClient
 from scrapy.exceptions import NotConfigured
+from scrapy import signals
 
 from datadog import initialize, api
 

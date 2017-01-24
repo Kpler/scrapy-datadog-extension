@@ -1,3 +1,3 @@
 __author__ = 'cmorent'
 __title__ = 'scrapydatadog'
-__version__ = '0.0.1'
+__version__ = '0.0.2'
