@@ -49,15 +49,19 @@ class DatadogExtension(object):
             job_stats = job.metadata
 
             # Build metrics list of dict to send to Datadog API
-            metrics = []
             tags=["project:{}".format(project_id),
                   "spider:{}".format(spider_id),
                   "job:{}".format(job_id)]
             stats_to_collect = ["item_scraped_count",
                                 "response_received_count"]
+            metrics = [{'metric': "{}.{}".format(self.dd_metric_prefix, 'done'),
+                        'points': 1,
+                        'tags': tags}]
             if 'finish_time' in job_stats.keys() and 'start_time' in job_stats.keys():
                 elapsed_time = job_stats['finish_time'] - job_stats['start_time']
-                metrics.append({'metric': self.dd_metric_prefix + 'elapsed_time', 'points': elapsed_time.seconds, 'tags': tags})
+                metrics.append({'metric': "{}.{}".format(self.dd_metric_prefix, 'elapsed_time'),
+                                'points': elapsed_time.seconds,
+                                'tags': tags})
 
             logger.info('[DATADOG] Configure API client with credentials: DATADOG_API_KEY={} DATADOG_APP_KEY={}'.format(self.dd_api_key, self.dd_app_key))
             for k, v in job_stats.iteritems():
