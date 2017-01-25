@@ -50,8 +50,7 @@ class DatadogExtension(object):
 
             # Build metrics list of dict to send to Datadog API
             tags=["project:{}".format(project_id),
-                  "spider:{}".format(spider_id),
-                  "job:{}".format(job_id)]
+                  "spider:{}".format(spider_id)]
             stats_to_collect = ["item_scraped_count",
                                 "response_received_count"]
             metrics = [{'metric': "{}.{}".format(self.dd_metric_prefix, 'done'),
