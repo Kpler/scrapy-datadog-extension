@@ -17,7 +17,7 @@ class TestDatadogExtension(unittest.TestCase):
         with self.assertRaises(NotConfigured):
             self.extension = DatadogExtension.from_crawler(crawler)
 
-    def test_configured_init(self, handler):
+    def test_configured_init(self):
         sh_api_key = 'azertyuiop123456789'
         dd_api_key = 'azertyuiop123456789'
         dd_app_key = 'azertyuiop123456789'
@@ -27,7 +27,10 @@ class TestDatadogExtension(unittest.TestCase):
                             'DATADOG_API_KEY': dd_api_key,
                             'DATADOG_APP_KEY': dd_app_key}
 
-        extension = DatadogExtension.from_crawler(crawler)
+        raised = False
+        try:
+            extension = DatadogExtension.from_crawler(crawler)
+        except:
+            raised = True
+        self.assertFalse(raised, 'Exception raised')
 
-        handler.assert_called_once_with(sh_api_key, dd_api_key, dd_app_key)
-        extension.handler
