@@ -1,3 +1,4 @@
 # Project
 Scrapy
+scrapinghub==1.9.0
 datadog==0.15.0
