@@ -3,7 +3,7 @@ node {
     stage 'Checkout'
         checkout scm
 
-    stage 'Build' {}
+    stage 'Build'
         echo "Building ${BRANCH_NAME}"
         sh 'chmod +x runtests.sh'
         sh './runtests.sh'
