@@ -49,6 +49,10 @@ class DatadogExtension(object):
             job_stats = job.metadata['scrapystats']
             logger.info('[DATADOG] Scrapystats: {}'.format(job_stats))
 
+            # Try another way to fetch scrapy stats
+            test_stats = spider.crawler.stats.get_stats()
+            logger.info('[DATADOG] ScrapyStats from crawler: {}'.format(test_stats))
+
             # Build metrics list of dict to send to Datadog API
             tags=["project:{}".format(project_id),
                   "spider:{}".format(spider_id)]
