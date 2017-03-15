@@ -1,7 +1,6 @@
 import logging
 import os
 
-from scrapinghub import HubstorageClient
 from scrapy.exceptions import NotConfigured
 from scrapy import signals
 
@@ -13,12 +12,13 @@ logger = logging.getLogger(__name__)
 class DatadogExtension(object):
 
     def __init__(self, sh_api_key, dd_api_key, dd_app_key, dd_host_name,
-                 dd_metric_prefix):
+                 dd_metric_prefix, stats):
         self.sh_api_key = sh_api_key
         self.dd_api_key = dd_api_key
         self.dd_app_key = dd_app_key
         self.dd_host_name = dd_host_name
         self.dd_metric_prefix = dd_metric_prefix
+        self.stats = stats
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -31,8 +31,10 @@ class DatadogExtension(object):
         if not sh_api_key or not dd_api_key or not dd_app_key:
             raise NotConfigured
 
+        stats = crawler.stats
+
         ext = cls(sh_api_key, dd_api_key, dd_app_key, dd_host_name,
-                  dd_metric_prefix)
+                  dd_metric_prefix, stats)
         crawler.signals.connect(ext.spider_closed,
                                 signal=signals.spider_closed)
         return ext
@@ -44,14 +46,8 @@ class DatadogExtension(object):
 
         if job_id is not None:
             # Fetch scrapy stats
-            hc = HubstorageClient(auth=self.sh_api_key)
-            job = hc.get_job("{}/{}/{}".format(project_id, spider_id, job_id))
-            job_stats = job.metadata['scrapystats']
-            logger.info('[DATADOG] Scrapystats: {}'.format(job_stats))
-
-            # Try another way to fetch scrapy stats
-            test_stats = spider.crawler.stats.get_stats()
-            logger.info('[DATADOG] ScrapyStats from crawler: {}'.format(test_stats))
+            job_stats = self.stats.get_stats(spider)
+            logger.info('[DATADOG] ScrapyStats from crawler: {}'.format(job_stats))
 
             # Build metrics list of dict to send to Datadog API
             tags=["project:{}".format(project_id),
