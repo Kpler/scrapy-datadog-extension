@@ -51,7 +51,8 @@ class DatadogExtension(object):
 
             # Build metrics list of dict to send to Datadog API
             tags=["project:{}".format(project_id),
-                  "spider:{}".format(spider_id)]
+                  "spider_name:{}".format(spider.name),
+                  "spider_id:{}".format(spider_id)]
             stats_to_collect = ["item_scraped_count", "response_received_count"]
             metrics = [{'metric': "{}.{}".format(self.dd_metric_prefix, 'done'), 'points': 1, 'tags': tags}]
             if 'finish_time' in job_stats.keys() and 'start_time' in job_stats.keys():
