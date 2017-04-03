@@ -2,4 +2,6 @@ ipdb
 mock
 nose
 nose-cov
+flake8==3.3.0
+
 -r requirements.txt
