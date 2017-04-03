@@ -31,6 +31,9 @@ stats api:   https://doc.scrapy.org/en/latest/topics/stats.html
     - scheduler/enqueued/memory': 18,
     - start_time': datetime.datetime(2017, 4, 3, 9, 12, 20, 281530)}
 
+## Extension built-in stats
+
+    - elapsed_time
 """
 
 import logging
@@ -43,20 +46,44 @@ import datadog
 
 logger = logging.getLogger(__name__)
 # TODO make it accessible outside the extension
-STATS_TO_COLLECT = ['item_scraped_count',
-                    'response_received_count']
+DEFAUL_STATS_TO_COLLECT = ['item_scraped_count',
+                           'response_received_count']
 DEFAULT_MISSING = 0
+# unix-like exit codes from Scrapy finish state conventions
+EXIT_MAPPING = {'finished': 0,
+                'default': 1}
+MANDATORY_SETTINGS = ['DATADOG_API_KEY',
+                      'DATADOG_APP_KEY',
+                      'SCRAPY_PROJECT_ID',
+                      'SCRAPY_SPIDER_ID']
+
+
+def _validate_conf(conf):
+    for key in MANDATORY_SETTINGS:
+        if key not in conf:
+            logger.warning('datadog extension setting missing: {}'.format(key))
+            raise NotConfigured
+
+
+def _merge_env(settings):
+    settings.update({
+        k: v for k, v in os.environ.iteritems()
+        if k in MANDATORY_SETTINGS and k not in settings
+    })
 
 
 class DatadogExtension(object):
 
-    def __init__(self, sh_api_key, dd_api_key, dd_app_key, dd_host_name,
-                 dd_metric_prefix, stats):
-        self.sh_api_key = sh_api_key
-        self.dd_api_key = dd_api_key
-        self.dd_app_key = dd_app_key
-        self.dd_host_name = dd_host_name
-        self.dd_metric_prefix = dd_metric_prefix
+    def __init__(self, settings, stats):
+        self.dd_api_key = settings['DATADOG_API_KEY']
+        self.dd_app_key = settings['DATADOG_APP_KEY']
+        # NOTE set defaults on all `.get()` ?
+        self.dd_host_name = settings.get('DATADOG_SH_HOSTNAME')
+        self.dd_metric_prefix = settings.get('DATADOG_METRIC_PREFIX')
+        self.to_collect = settings.get('DATADOG_TO_COLLECT', DEFAUL_STATS_TO_COLLECT)
+
+        self.project_id = settings.get('SCRAPY_PROJECT_ID')
+        self.spider_id = settings.get('SCRAPY_SPIDER_ID')
 
         # make stats available within the spider
         # so one can collect custom metrics
@@ -68,66 +95,26 @@ class DatadogExtension(object):
 
     @classmethod
     def from_crawler(cls, crawler):
-        sh_api_key = crawler.settings.get('SH_API_KEY')
-        dd_api_key = crawler.settings.get('DATADOG_API_KEY')
-        dd_app_key = crawler.settings.get('DATADOG_APP_KEY')
-        dd_host_name = crawler.settings.get('DATADOG_SH_HOSTNAME')
-        dd_metric_prefix = crawler.settings.get('DATADOG_METRIC_PREFIX')
+        _merge_env(crawler.settings)
+        _validate_conf(crawler.settings)
 
-        # try to read stats tags
-        project_id = os.environ.get('SCRAPY_PROJECT_ID')
-        spider_id = os.environ.get('SCRAPY_SPIDER_ID')
+        ext = cls(crawler.settings, crawler.stats)
 
-        if project_id is None or spider_id is None:
-            logger.warning('no project/spider id provided, unable to tag stats')
-            raise NotConfigured
-
-        if not sh_api_key or not dd_api_key or not dd_app_key:
-            logger.warning('no scrapinghub or datadog credentials found')
-            raise NotConfigured
-
-        ext = cls(sh_api_key, dd_api_key, dd_app_key, dd_host_name,
-                  dd_metric_prefix, crawler.stats)
-
-        crawler.signals.connect(ext.spider_closed,
-                                signal=signals.spider_closed)
+        crawler.signals.connect(ext.spider_closed, signal=signals.spider_closed)
 
         return ext
 
     def tags(self, spider):
-        # initialization made sure they were here
-        project_id = os.environ.get('SCRAPY_PROJECT_ID')
-        spider_id = os.environ.get('SCRAPY_SPIDER_ID')
-
         # TODO compute another tag based on spider arguments
         # (use case : some spiders split the work to avoid ban)
-        return ['project:{}'.format(project_id),
+        return ['project:{}'.format(self.project_id),
                 'spider_name:{}'.format(spider.name),
-                'spider_id:{}'.format(spider_id)]
+                'spider_id:{}'.format(self.spider_id)]
 
-    def spider_closed(self, spider):
-        # Fetch scrapy stats
-        job_stats = self.stats.get_stats(spider)
-        logger.debug('ScrapyStats from crawler: {}'.format(job_stats))
+    def _metrics_fmt(self, key):
+        return '{}.{}'.format(self.dd_metric_prefix, key)
 
-        # Build metrics list of dict to send to Datadog API
-        tags = self.tags(spider)
-        # ping datadog that a spider is done
-        metrics = [{'metric': '{}.{}'.format(self.dd_metric_prefix, 'done'),
-                    'points': 1,
-                    'tags': tags}]
-
-        if 'finish_time' in job_stats.keys() and 'start_time' in job_stats.keys():
-            elapsed_time = job_stats['finish_time'] - job_stats['start_time']
-            metrics.append({'metric': '{}.{}'.format(self.dd_metric_prefix, 'elapsed_time'),
-                            'points': elapsed_time.seconds,
-                            'tags': tags})
-
-        for key in STATS_TO_COLLECT:
-            metrics.append({'metric': '{}.{}'.format(self.dd_metric_prefix, key),
-                            'points': job_stats.get(key, DEFAULT_MISSING),
-                            'tags': tags})
-
+    def commit(self, metrics):
         # initialize API client
         logger.debug('Configure API client with credentials')
         options = {'api_key': self.dd_api_key,
@@ -138,3 +125,33 @@ class DatadogExtension(object):
 
         res = datadog.api.Metric.send(metrics)
         logger.debug('API call result: {}'.format(res))
+
+    def spider_closed(self, spider):
+        # Fetch scrapy stats
+        job_stats = self.stats.get_stats(spider)
+        logger.debug('ScrapyStats from crawler: {}'.format(job_stats))
+
+        # Build metrics list of dict to send to Datadog API
+        tags = self.tags(spider)
+
+        def collect(key, value):
+            return {'metrics': self._metrics_fmt(key),
+                    'points': value,
+                    'tags': tags}
+
+        # ping datadog that a spider is done
+        metrics = [collect('done', 1)]
+
+        # notify success/failure
+        exit_code = EXIT_MAPPING.get(job_stats.get('finish_reason'),
+                                     EXIT_MAPPING['default'])
+        metrics.append(collect('reason', exit_code))
+
+        if 'finish_time' in job_stats.keys() and 'start_time' in job_stats.keys():
+            elapsed_time = job_stats['finish_time'] - job_stats['start_time']
+            metrics.append(collect('elapsed_time', elapsed_time.seconds))
+
+        for key in self.to_collect:
+            metrics.append(collect(key, job_stats.get(key, DEFAULT_MISSING)))
+
+        self.commit(metrics)
