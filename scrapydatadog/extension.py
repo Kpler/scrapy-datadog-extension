@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# vim:fenc=utf-8
 
 """Scrapy extension sending crawl stats to Datadog.
 
@@ -29,25 +28,26 @@ stats api:   https://doc.scrapy.org/en/latest/topics/stats.html
     - scheduler/enqueued/memory': 18,
     - start_time': datetime.datetime(2017, 4, 3, 9, 12, 20, 281530)}
 
-## Extension built-in stats
+## Extension built-in stats (always sent)
 
+    - done: ping datadog (i.e. just send 1)
     - elapsed_time: time in second betwwen spider start and finish
     - exit_code: unix-like code to datadog to understand finish state
+
 """
 
 import logging
 import os
 
-from scrapy.exceptions import NotConfigured
-from scrapy import signals
-
 import datadog
+from scrapy import signals
+from scrapy.exceptions import NotConfigured
 
 logger = logging.getLogger(__name__)
 
 # TODO make it accessible outside the extension
-DEFAUL_STATS_TO_COLLECT = ['item_scraped_count',
-                           'response_received_count']
+DEFAULT_CUSTOM_METRICS = ['item_scraped_count',
+                          'response_received_count']
 DEFAULT_MISSING = 0
 DEFAULT_DD_PREFIX = 'spider.stats'
 DEFAULT_DD_HOST_NAME = 'app.scrapinghub.com'
@@ -70,6 +70,10 @@ MANDATORY_SETTINGS = ['DATADOG_API_KEY',
                       'DATADOG_APP_KEY',
                       'SCRAPY_PROJECT_ID',
                       'SCRAPY_SPIDER_ID']
+
+
+def _sanitize_metric_name(key):
+    return key.lower().replace('/', '.')
 
 
 def _validate_conf(conf):
@@ -101,19 +105,14 @@ class DatadogExtension(object):
         self.dd_api_key = settings['DATADOG_API_KEY']
         self.dd_app_key = settings['DATADOG_APP_KEY']
         self.dd_host_name = settings.get('DATADOG_HOST_NAME', DEFAULT_DD_HOST_NAME)
-        self.dd_metric_prefix = settings.get('DATADOG_METRIC_PREFIX', DEFAULT_DD_PREFIX)
+        self.dd_metric_prefix = settings.get('DATADOG_METRICS_PREFIX', DEFAULT_DD_PREFIX)
 
         # extend default behaviors
-        self.to_collect = _make_list(settings.get('DATADOG_TO_COLLECT',
-                                     DEFAUL_STATS_TO_COLLECT))
+        self.to_collect = _make_list(settings.get('DATADOG_CUSTOM_METRICS',
+                                     DEFAULT_CUSTOM_METRICS))
         self.custom_tags = _make_list(settings.get('DATADOG_CUSTOM_TAGS', []))
 
-        # make stats available within the spider
-        # so one can collect custom metrics
-        #
-        #       >>> self.stats.inc_value('login_failed')
-        #
-        # learn more: https://doc.scrapy.org/en/latest/topics/stats.html
+        # allow the rest of the extension to access stats logic/data
         self.stats = stats
 
     @classmethod
@@ -135,7 +134,8 @@ class DatadogExtension(object):
                 'spider_id:{}'.format(self.spider_id)] + self.custom_tags
 
     def _metrics_fmt(self, key):
-        return '{}.{}'.format(self.dd_metric_prefix, key)
+        sane_key = _sanitize_metric_name(key)
+        return '{}.{}'.format(self.dd_metric_prefix, sane_key)
 
     def commit(self, metrics):
         # initialize API client

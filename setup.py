@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# vim:fenc=utf-8
 
 try:
     from setuptools import setup
@@ -22,13 +21,11 @@ setup(
     name='scrapydatadog',
     version=scrapydatadog.__version__,
     description='Scrapy extension to send scrapy stats to Datadog.',
-    # long_description=open('README.md').read(),
-    author='Cedric Morent',
-    author_email='cmorent@kpler.com',
+    author='Kpler Engineering',
+    author_email='dev@kpler.com',
     url='http://github.com/kpler/scrapy-datadog-extension',
     packages=packages,
     install_requires=requires,
-    # license=open('LICENSE').read(),
     classifiers=(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

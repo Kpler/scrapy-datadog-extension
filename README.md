@@ -1,19 +1,23 @@
-# scrapy-datadog-extension
+# Scrapy Datadog Extension
 
-scrapy-datadog-extension is an extension to  send metrics from your spiders
-executions to Datadog (scrapy stats).
+[![CircleCI](https://circleci.com/gh/Kpler/scrapy-datadog-extension.svg?style=svg)](https://circleci.com/gh/Kpler/scrapy-datadog-extension)
+
+scrapy-datadog-extension is a [Scrapy extension](scrapy-ext) to send metrics from your spiders
+executions to [Datadog][dd] ([scrapy stats][stats]).
 
 ## Installation
 
-There is no public version of this package yet, if you want to use it you will
-have to clone the project and make it installable easilly from the `scrapinghub-requirements.txt`.
+There is no public pre-packaged version yet. If you want to use it you
+will have to clone the project and make it installable easilly from the
+`requirements.txt`.
+
 
 ## Configuration
 
 First, you will need to include the extension to the `EXTENSIONS` dict located
 in your `settings.py` file. For example:
 
-    EXTENSION = {
+    EXTENSIONS = {
         'scrapy-datadog-extension': 1,
     }
 
@@ -22,10 +26,13 @@ settings of your jobs:
 
 - `DATADOG_API_KEY`: Your Datadog API key.
 - `DATADOG_APP_KEY`: Your Datadog APP key.
-- `DATADOG_METRIC_PREFIX`: What prefix you want to apply to all of your metrics,
+- `DATADOG_CUSTOM_TAGS`: List of tags to bind on metrics
+- `DATADOG_CUSTOM_METRICS`: Sub list of metrics to send to Datadog
+- `DATADOG_METRICS_PREFIX`: What prefix you want to apply to all of your metrics,
   _e.g._: `kp.`
-- `DATADOG_SH_HOSTNAME`: The hostname you want your metrics to be associated
+- `DATADOG_HOST_NAME`: The hostname you want your metrics to be associated
   with. _e.g._: `app.scrapinghub.com`.
+
 
 ## How it works
 
@@ -46,23 +53,30 @@ filtering from Datadog):
 
 Then, everything is sent to Datadog, using the Datadog API.
 
-For now, we still have some issues: Sometimes, when the spider_closed is
-executed right after the job completion, some scrapy stats are missing so we
-send incomplete list of metrics, preventing us to rely 100% on this extension.
-Maybe a _retry_ solution ( try to fetch stats every 1,2,3,5,8,13,21 seconds for
-example) might be a good solution?
+
+## Known issues
+
+- Sometimes, when the spider_closed is executed right after the job
+  completion, some scrapy stats are missing so we send incomplete list
+  of metrics, preventing us to rely 100% on this extension.
+
+
+## TODO
+
+- [ ] Include the name of the project/spider/job instead of simply send its ID.
+- [x] Make the `stats_to_collect` configurable from the ScrapingHub spiders
+  settings console.
+- [ ] Find a way to ensure that all the scrapy stats are collected prior to
+  send them.
 
 
 ## Useful links
 
-- Datadog API: http://docs.datadoghq.com/api/
-- ScrapingHub Hubstorage: https://pypi.python.org/pypi/hubstorage
-- ScrapingHub extensions: https://doc.scrapinghub.com/addons.html
-- Get access to the spider Job and Project IDs: https://github.com/Kpler/scrapy-job-parameters-extension
+- [Datadog API](http://docs.datadoghq.com/api/)
+- [ScrapingHub extensions](https://doc.scrapinghub.com/addons.html)
 
-## TODO
-- [ ] Also the name of the project/spider/job instead of simply send its ID.
-- [ ] Make the `stats_to_collect` configurable from the ScrapingHub spiders
-  settings console.
-- [ ] Find a way to ensure that all the scrapy stats are collected before to
-  send them.
+
+
+[dd]: https://www.datadoghq.com/
+[scrapy-ext]: https://doc.scrapy.org/en/latest/topics/extensions.html
+[stats]: https://doc.scrapy.org/en/latest/topics/stats.html
