@@ -18,10 +18,10 @@ requires = [
 ]
 
 setup(
-    name='scrapydatadog',
+    name=scrapydatadog.__title__,
     version=scrapydatadog.__version__,
     description='Scrapy extension to send scrapy stats to Datadog.',
-    author='Kpler Engineering',
+    author=scrapydatadog.__author__,
     author_email='dev@kpler.com',
     url='http://github.com/kpler/scrapy-datadog-extension',
     packages=packages,

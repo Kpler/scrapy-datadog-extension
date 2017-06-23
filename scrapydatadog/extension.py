@@ -46,8 +46,15 @@ from scrapy.exceptions import NotConfigured
 logger = logging.getLogger(__name__)
 
 # TODO make it accessible outside the extension
-DEFAULT_CUSTOM_METRICS = ['item_scraped_count',
-                          'response_received_count']
+DEFAULT_CUSTOM_METRICS = [
+    # we usually want to monitor the quantity of data found and the performance
+    'item_scraped_count',
+    'response_received_count',
+
+    # logs can be a good indicator of something going wrong
+    'log_count/WARNING',
+    'log_count/ERROR',
+]
 DEFAULT_MISSING = 0
 DEFAULT_DD_PREFIX = 'spider.stats'
 DEFAULT_DD_HOST_NAME = 'app.scrapinghub.com'
@@ -73,10 +80,40 @@ MANDATORY_SETTINGS = ['DATADOG_API_KEY',
 
 
 def _sanitize_metric_name(key):
+    """Ensure metrics are statsd/datadog compliant, ie use lower case and
+    dot-seperated namespace.
+
+    Example:
+
+        >>> # change nothing on good format
+        >>> _sanitize_metric_name('some.metrics.name')
+        'some.metrics.name'
+        >>> # otherwise:
+        >>> _sanitize_metric_name('SOME.weird.name')
+        'some.weird.name'
+        >>> _sanitize_metric_name('some/weird/name')
+        'some.weird.name'
+
+    """
     return key.lower().replace('/', '.')
 
 
 def _validate_conf(conf):
+    """Abort extension setup if we don't have all the required settings.
+
+    Example:
+
+        >>> _validate_conf({})
+        Traceback (most recent call last):
+            ...
+        NotConfigured
+        >>> _validate_conf({
+        ... 'DATADOG_API_KEY': 'xxxx',
+        ... 'DATADOG_APP_KEY': 'yyyy',
+        ... 'SCRAPY_PROJECT_ID': '123',
+        ... 'SCRAPY_SPIDER_ID': '456',
+        ... })
+    """
     for key in MANDATORY_SETTINGS:
         if key not in conf:
             logger.warning('datadog extension setting missing: {}'.format(key))
