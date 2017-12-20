@@ -49,14 +49,15 @@ At the end, we have a list of metrics, with tags associated (to enable better
 filtering from Datadog):
 
 - `project`: The scrapinghub project ID.
-- `spider`: The scrapinghub spider ID.
+- `spider_name`: The scrapinghub spider name as defined in the spider
+  class.
 
 Then, everything is sent to Datadog, using the Datadog API.
 
 
 ## Known issues
 
-- Sometimes, when the spider_closed is executed right after the job
+- Sometimes, when the `spider_closed` is executed right after the job
   completion, some scrapy stats are missing so we send incomplete list
   of metrics, preventing us to rely 100% on this extension.
 

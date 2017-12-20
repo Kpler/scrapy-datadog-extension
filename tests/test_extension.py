@@ -21,13 +21,11 @@ class TestDatadogExtension(unittest.TestCase):
         dd_api_key = 'azertyuiop123456789'
         dd_app_key = 'azertyuiop123456789'
         scrapy_id = '000'
-        spider_id = '111'
 
         crawler = Mock()
         crawler.settings = {'DATADOG_API_KEY': dd_api_key,
                             'DATADOG_APP_KEY': dd_app_key,
-                            'SCRAPY_PROJECT_ID': scrapy_id,
-                            'SCRAPY_SPIDER_ID': spider_id}
+                            'SCRAPY_PROJECT_ID': scrapy_id}
 
         raised = False
         try:

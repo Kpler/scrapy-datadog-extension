@@ -75,8 +75,7 @@ EXIT_MAPPING = {'finished': 0,
                 'default': 1}
 MANDATORY_SETTINGS = ['DATADOG_API_KEY',
                       'DATADOG_APP_KEY',
-                      'SCRAPY_PROJECT_ID',
-                      'SCRAPY_SPIDER_ID']
+                      'SCRAPY_PROJECT_ID']
 
 
 def _sanitize_metric_name(key):
@@ -111,7 +110,6 @@ def _validate_conf(conf):
         ... 'DATADOG_API_KEY': 'xxxx',
         ... 'DATADOG_APP_KEY': 'yyyy',
         ... 'SCRAPY_PROJECT_ID': '123',
-        ... 'SCRAPY_SPIDER_ID': '456',
         ... })
     """
     for key in MANDATORY_SETTINGS:
@@ -121,6 +119,7 @@ def _validate_conf(conf):
 
 
 def _merge_env(settings):
+    """Merge settings setup from env and/or scrapy settings."""
     settings.update({
         k: v for k, v in os.environ.iteritems()
         if k in MANDATORY_SETTINGS and k not in settings
@@ -137,7 +136,6 @@ class DatadogExtension(object):
     def __init__(self, settings, stats):
         # properly identify the job
         self.project_id = settings['SCRAPY_PROJECT_ID']
-        self.spider_id = settings['SCRAPY_SPIDER_ID']
 
         self.dd_api_key = settings['DATADOG_API_KEY']
         self.dd_app_key = settings['DATADOG_APP_KEY']
@@ -168,7 +166,7 @@ class DatadogExtension(object):
         # (use case : some spiders split the work to avoid ban)
         return ['project:{}'.format(self.project_id),
                 'spider_name:{}'.format(spider.name),
-                'spider_id:{}'.format(self.spider_id)] + self.custom_tags
+                ] + self.custom_tags
 
     def _metrics_fmt(self, key):
         sane_key = _sanitize_metric_name(key)
