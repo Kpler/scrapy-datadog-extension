@@ -11,4 +11,7 @@ dependencies:
 test:
   override:
     - flake8 --exit-zero --output-file=$CIRCLE_TEST_REPORTS/flake8/report.txt scrapydatadog/
-    - nosetests -v --with-doctest --with-xunit --xunit-file=$CIRCLE_TEST_REPORTS/nosetests/unit_tests.xml --with-timer --with-coverage --cover-min-percentage=64 --cover-html --cover-erase --cover-package=scrapydatadog --cover-html-dir=$CIRCLE_TEST_REPORTS/coverage/unit_tests --stop scrapydatadog
+    - nosetests -v --with-doctest --with-timer \
+      --with-xunit --xunit-file=$CIRCLE_TEST_REPORTS/nosetests/unit_tests.xml \
+      --with-coverage --cover-min-percentage=64 --cover-html --cover-erase --cover-package=scrapydatadog --cover-html-dir=$CIRCLE_TEST_REPORTS/coverage/unit_tests \
+      --stop scrapydatadog
