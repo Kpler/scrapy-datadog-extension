@@ -219,7 +219,7 @@ class DatadogExtension(object):
 
     def spider_closed(self, spider):
         # initialize API client
-        logger.debug('connecting to datadgo API')
+        logger.info('connecting to datadgo API')
         options = {
             'api_key': self.dd_api_key,
             'app_key': self.dd_app_key,
@@ -246,8 +246,7 @@ class DatadogExtension(object):
                 'host': self.dd_host_name,
             }
 
-        # ping datadog that a spider is done
-        metrics = [collect('done', 1)]
+        metrics = []
 
         if 'finish_time' in job_stats.keys() and 'start_time' in job_stats.keys():
             elapsed_time = job_stats['finish_time'] - job_stats['start_time']
@@ -256,6 +255,7 @@ class DatadogExtension(object):
         for key in self.to_collect:
             metrics.append(collect(key, job_stats.get(key, DEFAULT_MISSING)))
 
+        logger.info('collected metrics, publishing to datadog')
         self.commit(metrics)
 
         # notify success/failure using DD checks
