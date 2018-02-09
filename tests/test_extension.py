@@ -1,9 +1,11 @@
 # -*- coding: utf-8; -*-
 
+import os
 import unittest
-from mock import Mock
 
+from mock import Mock
 from scrapy.exceptions import NotConfigured
+
 from scrapydatadog.extension import DatadogExtension
 
 
@@ -11,8 +13,9 @@ class TestDatadogExtension(unittest.TestCase):
 
     def test_unconfigured_init(self):
         crawler = Mock()
-        crawler.settings = {'DATADOG_API_KEY': None,
-                            'DATADOG_APP_KEY': 'azertyuiop123456789'}
+        # don't include `DATADOG_API_KEY` and make sure it's not in the env
+        os.environ.pop('DATADOG_API_KEY', None)
+        crawler.settings = {'DATADOG_APP_KEY': 'azertyuiop123456789'}
 
         with self.assertRaises(NotConfigured):
             self.extension = DatadogExtension.from_crawler(crawler)
