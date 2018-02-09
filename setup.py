@@ -7,7 +7,6 @@ except ImportError:
 
 import scrapydatadog
 
-
 packages = [
     'scrapydatadog',
 ]
