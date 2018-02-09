@@ -11,7 +11,7 @@ test: lint
 		--with-doctest
 
 release:
-	ifndef REGISTRY
-		$(error REGISTRY is not set)
-	endif
+ifndef REGISTRY
+	$(error REGISTRY is not set)
+endif
 	python setup.py sdist upload -r $(REGISTRY)
