@@ -34,6 +34,13 @@ settings of your jobs:
   with. _e.g._: `app.scrapinghub.com`.
 
 
+Sometimes one might need to set tags at runtime. For example to compute
+them out of the spider arguments. To allow such scenario, just set a
+`tags` attribute to your spider with a list of `statsd` compatible keys
+(i.e. `["foo", ...]` or `["foo:bar", ...]`). Note that all metrics will
+then be tagged as well.
+
+
 ## How it works
 
 Basically, this extension will, on the `spider_closed` signal execution, collect
