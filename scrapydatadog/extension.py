@@ -44,6 +44,7 @@ stats api:   https://doc.scrapy.org/en/latest/topics/stats.html
 import logging
 
 import datadog
+from datadog.api.constants import CheckStatus
 from scrapy import signals
 
 from scrapydatadog import utils
@@ -111,9 +112,10 @@ class DatadogExtension(object):
         logger.debug('API call result: {}'.format(res))
 
     def publish_status(self, spider_name, finish_reason, tags):
-        status = ext_settings.DD_STATUS_MAPPING.get(finish_reason)
+        status = ext_settings.DD_STATUS_MAPPING.get(finish_reason, CheckStatus.UNKNOWN)
         msg = 'Spider {} ended because: {}'.format(spider_name, finish_reason)
 
+        logger.info(msg)
         datadog.api.ServiceCheck.check(check=self.dd_service_check,
                                        status=status,
                                        message=msg,
