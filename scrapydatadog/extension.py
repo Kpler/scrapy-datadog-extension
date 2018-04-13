@@ -41,6 +41,10 @@ stats api:   https://doc.scrapy.org/en/latest/topics/stats.html
 
 """
 
+# env: scrapinghub
+# role: scraping
+# stack: sourcing
+
 import logging
 
 import datadog
@@ -126,6 +130,7 @@ class DatadogExtension(object):
         # initialize API client
         logger.info('connecting to datadgo API')
         options = {
+            'host_name': self.dd_host_name,
             'api_key': self.dd_api_key,
             'app_key': self.dd_app_key,
         }
