@@ -16,3 +16,4 @@ test:
       --with-xunit --xunit-file=$CIRCLE_TEST_REPORTS/nosetests/unit_tests.xml
       --with-coverage --cover-min-percentage=64 --cover-html --cover-erase --cover-package=scrapydatadog
       --cover-html-dir=$CIRCLE_TEST_REPORTS/coverage/unit_tests
+    - tox
