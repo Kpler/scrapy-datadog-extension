@@ -45,7 +45,7 @@ stats api:   https://doc.scrapy.org/en/latest/topics/stats.html
 # role: scraping
 # stack: sourcing
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 import logging
 
 import datadog
