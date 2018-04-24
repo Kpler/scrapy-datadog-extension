@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import logging
 import os
 
 from scrapy.exceptions import NotConfigured
 from datadog.api.constants import CheckStatus
+import six
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +89,6 @@ def merge_env(settings):
     ALL_SETTINGS = MANDATORY_SETTINGS + CUSTOM_SETTINGS
 
     settings.update({
-        k: v for k, v in os.environ.iteritems()
+        k: v for k, v in six.iteritems(os.environ)
         if k in ALL_SETTINGS and k not in settings
     })
