@@ -45,6 +45,7 @@ stats api:   https://doc.scrapy.org/en/latest/topics/stats.html
 # role: scraping
 # stack: sourcing
 
+from __future__ import absolute_import, unicode_literals
 import logging
 
 import datadog
@@ -158,7 +159,7 @@ class DatadogExtension(object):
 
         metrics = []
 
-        if 'finish_time' in job_stats.keys() and 'start_time' in job_stats.keys():
+        if 'finish_time' in list(job_stats.keys()) and 'start_time' in list(job_stats.keys()):
             elapsed_time = job_stats['finish_time'] - job_stats['start_time']
             metrics.append(collect('elapsed_time', elapsed_time.seconds))
 
