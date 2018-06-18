@@ -1,8 +1,13 @@
 # Scrapy Datadog Extension
 
-[![CircleCI](https://circleci.com/gh/Kpler/scrapy-datadog-extension.svg?style=svg)](https://circleci.com/gh/Kpler/scrapy-datadog-extension)
 
-scrapy-datadog-extension is a [Scrapy extension](scrapy-ext) to send metrics from your spiders
+
+Branch | CI                                                                                                                                 | Python Versions
+-------|------------------------------------------------------------------------------------------------------------------------------------|---------------
+master |[![CircleCI](https://circleci.com/gh/Kpler/scrapy-datadog-extension.svg?style=svg)](https://circleci.com/gh/Kpler/scrapy-datadog-extension)|![pythonVersion](https://img.shields.io/badge/python-3.6-blue.svg) ![pythonVersion2](https://img.shields.io/badge/python-2.7-blue.svg?longCache=true&style=flat)
+
+
+**scrapy-datadog-extension** is a [Scrapy extension](scrapy-ext) to send metrics from your spiders
 executions to [Datadog][dd] ([scrapy stats][stats]).
 
 ## Installation
@@ -69,22 +74,37 @@ Then, everything is sent to Datadog, using the Datadog API.
   of metrics, preventing us to rely 100% on this extension.
 
 
-## TODO
-
-- [ ] Include the name of the project/spider/job instead of simply send its ID.
-- [x] Make the `stats_to_collect` configurable from the ScrapingHub spiders
-  settings console.
-- [ ] Find a way to ensure that all the scrapy stats are collected prior to
-  send them.
-
-
 ## Useful links
 
 - [Datadog API](http://docs.datadoghq.com/api/)
 - [ScrapingHub extensions](https://doc.scrapinghub.com/addons.html)
 
+---
+
+### By the way we're hiring [across the world](https://careers.kpler.com/) 👇
+
+<img src="https://s3-eu-west-1.amazonaws.com/www.kpler.com/assets/images/footer/kpler-offices.png" alt="Kpler Offices" />
+
+Join our engineering team to help us building data intensive projects!
+We are looking for people who love their craft and are the best at it.
+
+- Data Engineers in [Singapore](https://careers.kpler.com/jobs/data-engineer_singapore) and [Paris](https://careers.kpler.com/jobs/data-python-developer_paris_KPLER_yV1k4qO)
+- Data Support Engineers in [Singapore](https://careers.kpler.com/jobs/software-production-engineer-singapore_singapore)
+- Data Engineer interns in [Singapore](https://careers.kpler.com/jobs/data-engineer-singapore_singapore) and [Paris](https://careers.kpler.com/jobs/data-python-developer-internship_paris)
+
+<p align="center">
+  <br>
+  <img src="https://s3-eu-west-1.amazonaws.com/www.kpler.com/assets/images/logo/kpler_logo_orange_mail_signature.png" alt="Kpler logo" />
+  <br>
+  <br>
+</p>
+
+
+<p align="center"><i>This code is <a href="https://github.com/Kpler/scrapy-datadog-extension/blob/master/LICENSE.md">MIT licensed</a>.
+<br/>Designed & built by Kpler engineers with a </i>💻<i> and some </i>🍣.
 
 
 [dd]: https://www.datadoghq.com/
 [scrapy-ext]: https://doc.scrapy.org/en/latest/topics/extensions.html
 [stats]: https://doc.scrapy.org/en/latest/topics/stats.html
+[logo]: https://s3-eu-west-1.amazonaws.com/www.kpler.com/assets/images/logo/kpler_logo_orange_mail_signature.png
