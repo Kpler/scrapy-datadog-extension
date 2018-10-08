@@ -69,10 +69,20 @@ def validate_conf(conf):
         ... })
 
     """
+    # shortcut to disable the extension - especially useful for local
+    # development that doesn't require metrics
+    # if conf.get()
+    if conf.getbool('DATADOG_DISABLED'):
+        logger.warning('extension explicitely disabled')
+        raise NotConfigured
+
     for key in MANDATORY_SETTINGS:
         if key not in conf:
             logger.warning('datadog extension mandatory setting missing: {}'.format(key))
             logger.warning('scraper will go on but extension will be disabled.')
+            raise NotConfigured
+        elif conf[key] is None:
+            logger.warning('setting {} was set to `None`.'.format(key))
             raise NotConfigured
 
 
