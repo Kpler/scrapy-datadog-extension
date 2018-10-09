@@ -54,25 +54,32 @@ DD_STATUS_MAPPING = {
 }
 
 
-def validate_conf(conf):
-    """Abort extension setup if we don't have all the required settings.
+def getbool(conf, key):
+    """Emulation of scrapy.Settings;getbool.
 
-    Example:
-        >>> validate_conf({})
-        Traceback (most recent call last):
-            ...
-        NotConfigured
-        >>> validate_conf({
-        ... 'DATADOG_API_KEY': 'xxxx',
-        ... 'DATADOG_APP_KEY': 'yyyy',
-        ... 'SCRAPY_PROJECT_ID': '123',
-        ... })
+    It allows the config to remain agnostic from Scrapy specificities. Not that
+    it brings much to the table but that's really cheap to make it so.
+
+    Examples:
+        >>> getbool({}, 'foo')
+        False
+        >>> getbool({'foo': 'no'}, 'foo')
+        False
+        >>> getbool({'foo': 'yes'}, 'foo')
+        True
+        >>> getbool({'foo': 'True'}, 'foo')
+        True
 
     """
+    return conf.get(key) in [True, 'True', 'true', 'yes', 'y']
+
+
+def validate_conf(conf):
+    """Abort extension setup if we don't have all the required settings."""
     # shortcut to disable the extension - especially useful for local
     # development that doesn't require metrics
     # if conf.get()
-    if conf.getbool('DATADOG_DISABLED'):
+    if getbool(conf, 'DATADOG_DISABLED'):
         logger.warning('extension explicitely disabled')
         raise NotConfigured
 
