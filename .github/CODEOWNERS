@@ -1,0 +1,8 @@
+# Defines the crew level code ownership within this repository in terms of:
+# - Primary ownership
+# - Domain ownership
+#
+# For more details: https://kpler.atlassian.net/wiki/spaces/KSD/pages/243581088
+
+# primary owner
+* @Kpler/crew-bu-engineering-dev
